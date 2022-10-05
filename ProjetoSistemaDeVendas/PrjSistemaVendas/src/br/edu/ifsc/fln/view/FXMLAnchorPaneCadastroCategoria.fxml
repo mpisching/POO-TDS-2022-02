@@ -71,9 +71,9 @@
                   </GridPane>
                   <Group layoutX="120.0" layoutY="326.0" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0">
                      <children>
-                        <Button fx:id="btInserir" mnemonicParsing="false" prefHeight="26.0" prefWidth="63.0" text="Inserir" />
-                        <Button fx:id="btAlterar" layoutX="71.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="63.0" text="Alterar" />
-                        <Button fx:id="btExcluir" layoutX="142.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="63.0" text="Excluir" />
+                        <Button fx:id="btInserir" mnemonicParsing="false" onAction="#handleBtInserir" prefHeight="26.0" prefWidth="63.0" text="Inserir" />
+                        <Button fx:id="btAlterar" layoutX="71.0" mnemonicParsing="false" onAction="#handleBtAlterar" prefHeight="26.0" prefWidth="63.0" text="Alterar" />
+                        <Button fx:id="btExcluir" layoutX="142.0" mnemonicParsing="false" onAction="#handleBtExcluir" prefHeight="26.0" prefWidth="63.0" text="Excluir" />
                      </children>
                   </Group>
                </children>

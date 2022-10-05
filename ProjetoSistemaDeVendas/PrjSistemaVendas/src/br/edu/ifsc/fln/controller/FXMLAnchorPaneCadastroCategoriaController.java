@@ -8,6 +8,7 @@ import br.edu.ifsc.fln.model.dao.CategoriaDAO;
 import br.edu.ifsc.fln.model.database.Database;
 import br.edu.ifsc.fln.model.database.DatabaseFactory;
 import br.edu.ifsc.fln.model.domain.Categoria;
+import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.List;
@@ -15,12 +16,17 @@ import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 
 /**
  * FXML Controller class
@@ -88,6 +94,67 @@ public class FXMLAnchorPaneCadastroCategoriaController implements Initializable 
             lbCategoriaDescricao.setText("");
         }
         
+    }
+    
+    @FXML
+    public void handleBtInserir() throws IOException {
+        Categoria categoria = new Categoria();
+        boolean btConfirmarClicked = showFXMLAnchorPaneCadastroCategoriaDialog(categoria);
+        if (btConfirmarClicked) {
+            categoriaDAO.inserir(categoria);
+            carregarTableViewCategoria();
+        } 
+    }
+    
+    @FXML 
+    public void handleBtAlterar() throws IOException {
+        Categoria categoria = tableViewCategorias.getSelectionModel().getSelectedItem();
+        if (categoria != null) {
+            boolean btConfirmarClicked = showFXMLAnchorPaneCadastroCategoriaDialog(categoria);
+            if (btConfirmarClicked) {
+                categoriaDAO.alterar(categoria);
+                carregarTableViewCategoria();
+            }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Esta operação requer a seleção \nde uma Categoria na tabela ao lado");
+            alert.show();
+        }
+    }
+    
+    @FXML
+    public void handleBtExcluir() throws IOException {
+        Categoria categoria = tableViewCategorias.getSelectionModel().getSelectedItem();
+        if (categoria != null) {
+            categoriaDAO.remover(categoria);
+            carregarTableViewCategoria();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Esta operação requer a seleção \nde uma Categoria na tabela ao lado");
+            alert.show();
+        }
+    }
+
+    private boolean showFXMLAnchorPaneCadastroCategoriaDialog(Categoria categoria) throws IOException {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(FXMLAnchorPaneCadastroCategoriaController.class.getResource("../view/FXMLAnchorPaneCadastroCategoriaDialog.fxml"));
+        AnchorPane page = (AnchorPane) loader.load();
+        
+        //criação de um estágio de diálogo (StageDialog)
+        Stage dialogStage = new Stage();
+        dialogStage.setTitle("Cadastro de Categoria");
+        Scene scene = new Scene(page);
+        dialogStage.setScene(scene);
+        
+        //enviando o obejto categoria para o controller
+        FXMLAnchorPaneCadastroCategoriaDialogController controller = loader.getController();
+        controller.setDialogStage(dialogStage);
+        controller.setCategoria(categoria);
+        
+        //apresenta o diálogo e aguarda a confirmação do usuário
+        dialogStage.showAndWait();
+        
+        return controller.isBtConfirmarClicked();
     }
     
 }
