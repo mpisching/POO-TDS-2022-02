@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class CategoriaDAO {
 
     private Connection connection;
-
+    
     public Connection getConnection() {
         return connection;
     }

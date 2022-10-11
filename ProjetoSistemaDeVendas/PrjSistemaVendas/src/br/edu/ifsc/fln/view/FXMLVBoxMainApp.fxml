@@ -7,7 +7,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="br.edu.ifsc.fln.controller.FXMLVBoxMainAppController">
    <children>
       <MenuBar>
@@ -15,9 +14,9 @@
           <Menu mnemonicParsing="false" text="Cadastros">
             <items>
               <MenuItem fx:id="menuItemCadastroCategoria" mnemonicParsing="false" onAction="#handleMenuItemCadastroCategoria" text="Categoria" />
-                  <MenuItem fx:id="menuItemCadastroProduto" mnemonicParsing="false" text="Produto" />
+                  <MenuItem fx:id="menuItemCadastroProduto" mnemonicParsing="false" onAction="#handleMenuItemCadastroProduto" text="Produto" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem fx:id="menuItemCadastroCliente" mnemonicParsing="false" text="Cliente" />
+                  <MenuItem fx:id="menuItemCadastroCliente" mnemonicParsing="false" onAction="#handleMenuItemCadastroCliente" text="Cliente" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Processos">
@@ -38,6 +37,6 @@
             </Menu>
         </menus>
       </MenuBar>
-      <AnchorPane fx:id="anchorPane" prefHeight="388.0" prefWidth="600.0" />
+      <AnchorPane fx:id="anchorPane" prefHeight="382.0" prefWidth="600.0" />
    </children>
 </VBox>

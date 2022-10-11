@@ -37,11 +37,11 @@ public class FXMLAnchorPaneCadastroCategoriaController implements Initializable 
 
     
     @FXML
-    private Button btAlterar;
+    private Button btnAlterar;
 
     @FXML
     private Button btExcluir;
-
+    
     @FXML
     private Button btInserir;
 
@@ -55,7 +55,7 @@ public class FXMLAnchorPaneCadastroCategoriaController implements Initializable 
     private TableColumn<Categoria, String> tableColumnCategoriaDescricao;
 
     @FXML
-    private TableView<Categoria > tableViewCategorias;
+    private TableView<Categoria> tableViewCategorias;
     
     private List<Categoria> listaCategorias;
     private ObservableList<Categoria> observableListCategorias;
