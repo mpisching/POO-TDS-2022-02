@@ -13,25 +13,35 @@ public class Produto implements Serializable {
     private Categoria categoria;
 //    private int id_categoria.; ISSO É UM CRIME CONTRA A POO
     
-    //private int cdCategoria; // E R R A D O
-
-    public Produto(int id, String nome, String descricao, BigDecimal preco, Categoria categoria) {
-        this.id = id;
-        this.nome = nome;
-        this.descricao = descricao;
-        this.preco = preco;
-        this.categoria = categoria;
-    }
+    private Estoque estoque; //implementação do conceito de COMPOSIÇÃO - requer que o objeto seja construído pelo seu construtor, ou durante a declaração da variável
+    // ou private Estoque estoque = new Estoque(); //como o Estoque é definido pela composição, também não é recomendado o método set para este atributo
 
     public Produto() {
+        //qualquer construtor de Produto vai passar por este método para a a criação de estoque
+        this.createEstoque();
     }
 
     public Produto(int id, String nome, String descricao, BigDecimal preco) {
+        this();
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
         this.preco = preco;
+        //this.createEstoque();
     }
+    
+    public Produto(int id, String nome, String descricao, BigDecimal preco, Categoria categoria) {
+        this(id, nome, descricao, preco);
+        this.categoria = categoria;
+        //this.createEstoque();
+    }
+
+    private void createEstoque() {
+        //associação bidirecional - define o estoque do produto
+        this.estoque = new Estoque();
+        //atribui o produto ao estoque
+        this.estoque.setProduto(this);
+    }    
 
     public int getId() {
         return id;
@@ -71,6 +81,10 @@ public class Produto implements Serializable {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+    
+    public Estoque getEstoque() {
+        return estoque;
     }
 
     @Override
