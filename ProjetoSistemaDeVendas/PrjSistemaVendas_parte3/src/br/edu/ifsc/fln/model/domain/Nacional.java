@@ -10,13 +10,21 @@ package br.edu.ifsc.fln.model.domain;
  */
 public class Nacional extends Fornecedor{
     private String cnpj;
-
+    
     public String getCnpj() {
         return cnpj;
     }
 
     public void setCnpj(String cnpj) {
         this.cnpj = cnpj;
+    }
+    
+    @Override
+    public String getDados() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.getDados()).append("\n");
+        sb.append("CNPJ......: ").append(cnpj).append("\n");
+        return sb.toString();
     }
     
 }

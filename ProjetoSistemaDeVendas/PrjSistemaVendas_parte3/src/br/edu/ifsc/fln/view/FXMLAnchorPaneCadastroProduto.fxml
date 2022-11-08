@@ -48,6 +48,7 @@
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                      </rowConstraints>
                      <children>
                         <Label alignment="CENTER_RIGHT" prefHeight="18.0" prefWidth="92.0" text="ID:">
@@ -76,6 +77,12 @@
                            </padding>
                         </Label>
                         <Label fx:id="lbProdutoDescricao" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label alignment="CENTER_RIGHT" prefHeight="18.0" prefWidth="98.0" text="Fornecedor:" GridPane.rowIndex="5">
+                           <padding>
+                              <Insets right="5.0" />
+                           </padding>
+                        </Label>
+                        <Label fx:id="lbProdutoFornecedor" prefHeight="17.0" prefWidth="221.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                      </children>
                   </GridPane>
                   <Group layoutX="64.0" layoutY="285.0" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0">

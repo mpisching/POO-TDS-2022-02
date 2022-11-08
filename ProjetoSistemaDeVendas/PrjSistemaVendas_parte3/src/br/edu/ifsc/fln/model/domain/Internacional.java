@@ -28,4 +28,13 @@ public class Internacional extends Fornecedor {
         this.nif = nif;
     }
     
+    @Override
+    public String getDados() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.getDados()).append("\n");
+        sb.append("NIF.......: ").append(nif).append("\n");
+        sb.append("PAIS......: ").append(pais).append("\n");
+        return sb.toString();
+    }    
+    
 }

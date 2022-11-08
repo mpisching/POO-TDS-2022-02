@@ -80,6 +80,7 @@ public class FXMLAnchorPaneProcessoEstoqueAtualizacaoController implements Initi
     
     public void carregarChoiceBoxSituacao() {
         cbSituacao.setItems( FXCollections.observableArrayList( ESituacao.values()));
+        //cbSituacao.getSelectionModel().select(-1);
     }    
     
     /**

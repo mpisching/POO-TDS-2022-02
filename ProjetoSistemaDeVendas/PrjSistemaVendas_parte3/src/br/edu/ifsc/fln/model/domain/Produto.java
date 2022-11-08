@@ -13,6 +13,8 @@ public class Produto implements Serializable {
     private Categoria categoria;
 //    private int id_categoria.; ISSO É UM CRIME CONTRA A POO
     
+    private Fornecedor fornecedor;
+    
     private Estoque estoque; //implementação do conceito de COMPOSIÇÃO - requer que o objeto seja construído pelo seu construtor, ou durante a declaração da variável
     // ou private Estoque estoque = new Estoque(); //como o Estoque é definido pela composição, também não é recomendado o método set para este atributo
 
@@ -30,9 +32,10 @@ public class Produto implements Serializable {
         //this.createEstoque();
     }
     
-    public Produto(int id, String nome, String descricao, BigDecimal preco, Categoria categoria) {
+    public Produto(int id, String nome, String descricao, BigDecimal preco, Categoria categoria, Fornecedor fornecedor) {
         this(id, nome, descricao, preco);
         this.categoria = categoria;
+        this.fornecedor = fornecedor;
         //this.createEstoque();
     }
 
@@ -81,6 +84,14 @@ public class Produto implements Serializable {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public Fornecedor getFornecedor() {
+        return fornecedor;
+    }
+
+    public void setFornecedor(Fornecedor fornecedor) {
+        this.fornecedor = fornecedor;
     }
     
     public Estoque getEstoque() {

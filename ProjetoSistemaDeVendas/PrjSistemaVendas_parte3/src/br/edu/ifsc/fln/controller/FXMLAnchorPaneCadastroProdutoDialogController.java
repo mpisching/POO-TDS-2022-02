@@ -6,9 +6,11 @@
 package br.edu.ifsc.fln.controller;
 
 import br.edu.ifsc.fln.model.dao.CategoriaDAO;
+import br.edu.ifsc.fln.model.dao.FornecedorDAO;
 import br.edu.ifsc.fln.model.database.Database;
 import br.edu.ifsc.fln.model.database.DatabaseFactory;
 import br.edu.ifsc.fln.model.domain.Categoria;
+import br.edu.ifsc.fln.model.domain.Fornecedor;
 import br.edu.ifsc.fln.model.domain.Produto;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -45,6 +47,9 @@ public class FXMLAnchorPaneCadastroProdutoDialogController implements Initializa
     
     @FXML
     private ComboBox<Categoria> cbCategoria;
+    
+    @FXML
+    private ComboBox<Fornecedor> cbFornecedor;    
 
     @FXML
     private Button btConfirmar;
@@ -59,6 +64,7 @@ public class FXMLAnchorPaneCadastroProdutoDialogController implements Initializa
     private final Database database = DatabaseFactory.getDatabase("mysql");
     private final Connection connection = database.conectar();
     private final CategoriaDAO categoriaDAO = new CategoriaDAO();
+    private final FornecedorDAO fornecedorDAO = new FornecedorDAO();
     
     private Stage dialogStage;
     private boolean buttonConfirmarClicked = false;
@@ -71,6 +77,9 @@ public class FXMLAnchorPaneCadastroProdutoDialogController implements Initializa
     public void initialize(URL url, ResourceBundle rb) {
         categoriaDAO.setConnection(connection);
         carregarComboBoxCategorias();
+        
+        fornecedorDAO.setConnection(connection);
+        carregarComboBoxFornecedores();
         setFocusLostHandle();
     } 
     
@@ -108,6 +117,17 @@ public class FXMLAnchorPaneCadastroProdutoDialogController implements Initializa
                 FXCollections.observableArrayList(listaCategorias);
         cbCategoria.setItems(observableListCategorias);
     }    
+    
+    private List<Fornecedor> listaFornecedores;
+    private ObservableList<Fornecedor> observableListFornecedores; 
+    
+    public void carregarComboBoxFornecedores() {
+        listaFornecedores = fornecedorDAO.listar();
+        observableListFornecedores = 
+                FXCollections.observableArrayList(listaFornecedores);
+        cbFornecedor.setItems(observableListFornecedores);
+    }    
+    
     
     /**
      * @return the dialogStage
@@ -157,6 +177,7 @@ public class FXMLAnchorPaneCadastroProdutoDialogController implements Initializa
             tfPreco.setText("");
         }
         cbCategoria.getSelectionModel().select(produto.getCategoria());
+        cbFornecedor.getSelectionModel().select(produto.getFornecedor());
     }    
     
     @FXML
@@ -167,7 +188,8 @@ public class FXMLAnchorPaneCadastroProdutoDialogController implements Initializa
             produto.setPreco(new BigDecimal(tfPreco.getText()));
             produto.setCategoria(
                     cbCategoria.getSelectionModel().getSelectedItem());
-
+            produto.setFornecedor(
+                    cbFornecedor.getSelectionModel().getSelectedItem());
             buttonConfirmarClicked = true;
             dialogStage.close();
         }
@@ -193,6 +215,10 @@ public class FXMLAnchorPaneCadastroProdutoDialogController implements Initializa
         if (cbCategoria.getSelectionModel().getSelectedItem() == null) {
             errorMessage += "Selecione uma categoria!\n";
         }
+        
+        if (cbFornecedor.getSelectionModel().getSelectedItem() == null) {
+            errorMessage += "Selecione um Fornecedor!\n";
+        }        
         
         if (errorMessage.length() == 0) {
             return true;

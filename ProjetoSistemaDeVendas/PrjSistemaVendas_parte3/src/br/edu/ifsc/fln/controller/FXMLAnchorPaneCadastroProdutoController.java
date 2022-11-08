@@ -62,6 +62,9 @@ public class FXMLAnchorPaneCadastroProdutoController implements Initializable {
 
     @FXML
     private Label lbProdutoCategoria;
+    
+    @FXML
+    private Label lbProdutoFornecedor;
 
     @FXML
     private Button btInserir;
@@ -98,7 +101,7 @@ public class FXMLAnchorPaneCadastroProdutoController implements Initializable {
         tableColumnNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
         tableColumnPreco.setCellValueFactory(new PropertyValueFactory<>("preco"));
         
-        listaProdutos = produtoDAO.listar();
+        listaProdutos = produtoDAO.listagem();
         
         observableListProdutos = FXCollections.observableArrayList(listaProdutos);
         tableView.setItems(observableListProdutos);
@@ -112,12 +115,14 @@ public class FXMLAnchorPaneCadastroProdutoController implements Initializable {
             lbProdutoDescricao.setText(produto.getDescricao());
             lbProdutoPreco.setText(df.format(produto.getPreco().doubleValue()));
             lbProdutoCategoria.setText(produto.getCategoria().getDescricao());
+            lbProdutoFornecedor.setText(produto.getFornecedor().getNome());
         } else {
             lbProdutoId.setText("");
             lbProdutoNome.setText("");
             lbProdutoDescricao.setText("");
             lbProdutoPreco.setText("");
             lbProdutoCategoria.setText("");
+            lbProdutoFornecedor.setText("");
         }
     }
     
