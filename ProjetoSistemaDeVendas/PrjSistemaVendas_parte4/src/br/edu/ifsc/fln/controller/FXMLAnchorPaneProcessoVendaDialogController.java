@@ -10,6 +10,7 @@ import br.edu.ifsc.fln.model.dao.ProdutoDAO;
 import br.edu.ifsc.fln.model.database.Database;
 import br.edu.ifsc.fln.model.database.DatabaseFactory;
 import br.edu.ifsc.fln.model.domain.Cliente;
+import br.edu.ifsc.fln.model.domain.ESituacao;
 import br.edu.ifsc.fln.model.domain.EStatusVenda;
 import br.edu.ifsc.fln.model.domain.ItemDeVenda;
 import br.edu.ifsc.fln.model.domain.Produto;
@@ -17,9 +18,13 @@ import br.edu.ifsc.fln.model.domain.Venda;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Connection;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -111,6 +116,7 @@ public class FXMLAnchorPaneProcessoVendaDialogController implements Initializabl
         carregarComboBoxClientes();
         carregarComboBoxProdutos();
         carregarChoiceBoxSituacao();
+        setFocusLostHandle();
         tableColumnProduto.setCellValueFactory(new PropertyValueFactory<>("produto"));
         tableColumnQuantidade.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
         tableColumnValor.setCellValueFactory(new PropertyValueFactory<>("valor"));
@@ -123,27 +129,30 @@ public class FXMLAnchorPaneProcessoVendaDialogController implements Initializabl
     }
 
     private void carregarComboBoxProdutos() {
-        listaProdutos = produtoDAO.listar();
+        /* carrega apenas os produtos  com estoque cuja SITUACAO está em ATIVO para operações */
+        listaProdutos = produtoDAO.listar(ESituacao.ATIVO);
         observableListProdutos = FXCollections.observableArrayList(listaProdutos);
         comboBoxProduto.setItems(observableListProdutos);
     }
     
     
     public void carregarChoiceBoxSituacao() {
-        choiceBoxSituacao.setItems( FXCollections.observableArrayList( EStatusVenda.values()));
+        choiceBoxSituacao.setItems( FXCollections.observableArrayList(EStatusVenda.values()));
         choiceBoxSituacao.getSelectionModel().select(0);
     }
 
-//    private void setFocusLostHandle() {
-//        comboBoxClientes.focusedProperty().addListener((ov, oldV, newV) -> {
-//        if (!newV) { // focus lost
-//                if (comboBoxClientes.getText() == null || comboBoxClientes.getText().isEmpty()) {
-//                    //System.out.println("teste focus lost");
-//                    comboBoxClientes.requestFocus();
-//                }
-//            }
-//        });
-//    }
+    private void setFocusLostHandle() {
+        textFieldDesconto.focusedProperty().addListener((ov, oldV, newV) -> {
+        if (!newV) { // focus lost
+                if (textFieldDesconto.getText() != null && !textFieldDesconto.getText().isEmpty()) {
+                    //System.out.println("teste focus lost");
+                    venda.setTaxaDesconto(Double.parseDouble(textFieldDesconto.getText()));
+                    textFieldValor.setText(venda.getTotal().toString());
+                    
+                }
+            }
+        });
+    }
     
     /**
      * @return the dialogStage
@@ -185,15 +194,18 @@ public class FXMLAnchorPaneProcessoVendaDialogController implements Initializabl
      */
     public void setVenda(Venda venda) {
         this.venda = venda;
-        comboBoxClientes.getSelectionModel().select(this.venda.getCliente());
-        datePickerData.setValue(this.venda.getData());
-        checkBoxPago.setSelected(this.venda.isPago());
-        observableListItensDeVenda = FXCollections.observableArrayList(
-                this.venda.getItensDeVenda());
-        tableViewItensDeVenda.setItems(observableListItensDeVenda);
-        textFieldValor.setText(String.format("%.2f", this.venda.getTotal()));
-        textFieldDesconto.setText(String.format("%.2f", this.venda.getTaxaDesconto()));
-        choiceBoxSituacao.getSelectionModel().select(this.venda.getStatusVenda());
+        if (venda.getId() != 0) { 
+            comboBoxClientes.getSelectionModel().select(this.venda.getCliente());
+            datePickerData.setValue(this.venda.getData());
+            checkBoxPago.setSelected(this.venda.isPago());
+            observableListItensDeVenda = FXCollections.observableArrayList(
+                    this.venda.getItensDeVenda());
+            tableViewItensDeVenda.setItems(observableListItensDeVenda);
+            textFieldValor.setText(String.format("%.2f", this.venda.getTotal()));
+            textFieldDesconto.setText(String.format("%.2f", this.venda.getTaxaDesconto()));
+            choiceBoxSituacao.getSelectionModel().select(this.venda.getStatusVenda());
+
+        }
     }
 
     @FXML
@@ -201,14 +213,16 @@ public class FXMLAnchorPaneProcessoVendaDialogController implements Initializabl
         Produto produto;
         ItemDeVenda itemDeVenda = new ItemDeVenda();
         if (comboBoxProduto.getSelectionModel().getSelectedItem() != null) {
+            //o comboBox possui dados sintetizados de Produto para evitar carga desnecessária de informação
             produto = comboBoxProduto.getSelectionModel().getSelectedItem();
+            //a instrução a seguir busca detalhes do produto selecionado
+            produto = produtoDAO.buscar(produto);
             if (produto.getEstoque().getQuantidade() >= Integer.parseInt(textFieldQuantidadeProduto.getText())) {
                 itemDeVenda.setProduto(produto);
                 itemDeVenda.setQuantidade(Integer.parseInt(textFieldQuantidadeProduto.getText()));
                 itemDeVenda.setValor(produto.getPreco().multiply(BigDecimal.valueOf(itemDeVenda.getQuantidade())));
                 itemDeVenda.setVenda(venda);
                 venda.getItensDeVenda().add(itemDeVenda);
-                venda.setTotal(venda.getTotal().add(itemDeVenda.getValor()));
                 observableListItensDeVenda = FXCollections.observableArrayList(venda.getItensDeVenda());
                 tableViewItensDeVenda.setItems(observableListItensDeVenda);
                 textFieldValor.setText(String.format("%.2f", venda.getTotal()));
@@ -258,15 +272,21 @@ public class FXMLAnchorPaneProcessoVendaDialogController implements Initializabl
         ItemDeVenda itemDeVenda
                 = tableViewItensDeVenda.getSelectionModel().getSelectedItem();
         int index = tableViewItensDeVenda.getSelectionModel().getSelectedIndex();
-        itemDeVenda.setQuantidade(
-                Integer.parseInt(inputDialog(itemDeVenda.getQuantidade())));
-        //venda.getItensDeVenda().set(venda.getItensDeVenda().indexOf(itemDeVenda),itemDeVenda);
-        venda.getItensDeVenda().set(index, itemDeVenda);
-        venda.setTotal(venda.getTotal().subtract(itemDeVenda.getValor()));
-        itemDeVenda.setValor(itemDeVenda.getProduto().getPreco().multiply(BigDecimal.valueOf(itemDeVenda.getQuantidade())));
-        venda.setTotal(venda.getTotal().add(itemDeVenda.getValor()));
-        tableViewItensDeVenda.refresh();
-        textFieldValor.setText(String.format("%.2f", venda.getTotal()));
+        
+        int qtdAtualizada = Integer.parseInt(inputDialog(itemDeVenda.getQuantidade()));
+        if (itemDeVenda.getProduto().getEstoque().getQuantidade() >= qtdAtualizada) {
+            itemDeVenda.setQuantidade(qtdAtualizada);
+            //venda.getItensDeVenda().set(venda.getItensDeVenda().indexOf(itemDeVenda),itemDeVenda);
+            venda.getItensDeVenda().set(index, itemDeVenda);
+            itemDeVenda.setValor(itemDeVenda.getProduto().getPreco().multiply(BigDecimal.valueOf(itemDeVenda.getQuantidade())));
+            tableViewItensDeVenda.refresh();
+            textFieldValor.setText(String.format("%.2f", venda.getTotal()));
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Erro no estoque");
+            alert.setContentText("Não há quantidade suficiente de produtos para venda.");
+            alert.show();
+        }
     }
     
     private String inputDialog(int value) {
@@ -277,8 +297,6 @@ public class FXMLAnchorPaneProcessoVendaDialogController implements Initializabl
 
         // Traditional way to get the response value.
         Optional<String> result = dialog.showAndWait();
-        //if (result.isPresent()){
-        //    System.out.println("Your name: " + result.get());
         return result.get();
     }
 
@@ -287,15 +305,10 @@ public class FXMLAnchorPaneProcessoVendaDialogController implements Initializabl
         ItemDeVenda itemDeVenda
                 = tableViewItensDeVenda.getSelectionModel().getSelectedItem();
         int index = tableViewItensDeVenda.getSelectionModel().getSelectedIndex();
-        //itemDeVenda.setQuantidade(
-        //        Integer.parseInt(inputDialog(itemDeVenda.getQuantidade())));
-        venda.setTotal(venda.getTotal().subtract(itemDeVenda.getValor()));
         venda.getItensDeVenda().remove(index);
         observableListItensDeVenda = FXCollections.observableArrayList(venda.getItensDeVenda());
         tableViewItensDeVenda.setItems(observableListItensDeVenda);
 
-        //itemDeVenda.setValor(itemDeVenda.getProduto().getPreco() * itemDeVenda.getQuantidade());
-//        tableViewItensDeVenda.refresh();
         textFieldValor.setText(String.format("%.2f", venda.getTotal()));
     }
 
@@ -313,6 +326,13 @@ public class FXMLAnchorPaneProcessoVendaDialogController implements Initializabl
 
         if (observableListItensDeVenda == null) {
             errorMessage += "Itens de venda inválidos!\n";
+        }
+        
+        DecimalFormat df = new DecimalFormat("0.00");
+        try {
+            textFieldDesconto.setText(df.parse(textFieldDesconto.getText()).toString());
+        } catch (ParseException ex) {
+            errorMessage += "A taxa de desconto está incorreta! Use \",\" como ponto decimal.\n";
         }
 
         if (errorMessage.length() == 0) {

@@ -5,6 +5,7 @@
  */
 package br.edu.ifsc.fln.controller;
 
+import br.edu.ifsc.fln.model.dao.EstoqueDAO;
 import br.edu.ifsc.fln.model.dao.ItemDeVendaDAO;
 import br.edu.ifsc.fln.model.dao.ProdutoDAO;
 import br.edu.ifsc.fln.model.dao.VendaDAO;
@@ -13,6 +14,7 @@ import br.edu.ifsc.fln.model.database.DatabaseFactory;
 import br.edu.ifsc.fln.model.domain.Venda;
 import br.edu.ifsc.fln.model.domain.ItemDeVenda;
 import br.edu.ifsc.fln.model.domain.Produto;
+import br.edu.ifsc.fln.utils.AlertDialog;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
@@ -49,31 +51,6 @@ import javafx.stage.Stage;
  */
 public class FXMLAnchorPaneProcessoVendaController implements Initializable {
 
-//    @FXML
-//    private TableView<Venda> tableView;
-//    @FXML
-//    private TableColumn<Venda, Integer> tableColumnVendaCodigo;
-//    @FXML
-//    private TableColumn<Venda, LocalDate> tableColumnVendaData;
-//    @FXML
-//    private TableColumn<Venda, Venda> tableColumnVendaCliente;
-//    @FXML
-//    private Label labelVendaCodigo;
-//    @FXML
-//    private Label labelVendaData;
-//    @FXML
-//    private Label labelVendaValor;
-//    @FXML
-//    private Label labelVendaCliente;
-//    @FXML
-//    private CheckBox checkBoxVendaPago;
-//    @FXML
-//    private Button buttonInserir;
-//    @FXML
-//    private Button buttonAlterar;
-//    @FXML
-//    private Button buttonRemover;
-//    
     @FXML
     private Button buttonAlterar;
 
@@ -125,6 +102,7 @@ public class FXMLAnchorPaneProcessoVendaController implements Initializable {
     private final VendaDAO vendaDAO = new VendaDAO();
     private final ItemDeVendaDAO itemDeVendaDAO = new ItemDeVendaDAO();
     private final ProdutoDAO produtoDAO = new ProdutoDAO();
+    private final EstoqueDAO estoqueDAO = new EstoqueDAO();
 
     /**
      * Initializes the controller class.
@@ -196,30 +174,40 @@ public class FXMLAnchorPaneProcessoVendaController implements Initializable {
         venda.setItensDeVenda(itensDeVenda);
         boolean buttonConfirmarClicked = showFXMLAnchorPaneProcessoVendaDialog(venda);
         if (buttonConfirmarClicked) {
-            try {
-                connection.setAutoCommit(false);
-                vendaDAO.setConnection(connection);
-                vendaDAO.inserir(venda);
-                itemDeVendaDAO.setConnection(connection);
-                produtoDAO.setConnection(connection);
-                for (ItemDeVenda itemDeVenda: venda.getItensDeVenda()) {
-                    Produto produto = itemDeVenda.getProduto();
-                    itemDeVenda.setVenda(vendaDAO.buscarUltimaVenda());
-                    itemDeVendaDAO.inserir(itemDeVenda);
-                    produto.getEstoque().setQuantidade(
-                            produto.getEstoque().getQuantidade() - itemDeVenda.getQuantidade());
-                    produtoDAO.alterar(produto);
-                }
-                connection.commit();
-                carregarTableView();
-            } catch (SQLException exc) {
-                try {
-                    connection.rollback();
-                } catch (SQLException exc1) {
-                    Logger.getLogger(FXMLAnchorPaneProcessoVendaController.class.getName()).log(Level.SEVERE, null, exc1);
-                }
-                Logger.getLogger(FXMLAnchorPaneProcessoVendaController.class.getName()).log(Level.SEVERE, null, exc);
-            }   
+            //O código comentado a seguir (bloco try..catch) evidencia uma má prática de programação, haja vista que o boa parte da lógica de negócio está implementada no controller
+            //PROBLEMA: caso haja necessidade de levar esta aplicação para outro nível (uma aplicação web, por exemplo), todo esse código deverá ser repetido no controller, o que
+            //de fato pode se tornar inconsistente caso uma nova lógica seja necessária, implicando na necessidade de rever todos os controllers das aplicações, mas, o que garante
+            // que todas equipes farão isso?
+            //SOLUÇÃO: levar a lógica de negócio para o VendaDAO, afinal, estamos tratando de uma venda. É ela que deve resolver o problema
+//            try {
+//                connection.setAutoCommit(false);
+//                vendaDAO.setConnection(connection);
+//                vendaDAO.inserir(venda);
+//                itemDeVendaDAO.setConnection(connection);
+//                produtoDAO.setConnection(connection);
+//                estoqueDAO.setConnection(connection);
+//                for (ItemDeVenda itemDeVenda: venda.getItensDeVenda()) {
+//                    Produto produto = itemDeVenda.getProduto();
+//                    itemDeVenda.setVenda(vendaDAO.buscarUltimaVenda());
+//                    itemDeVendaDAO.inserir(itemDeVenda);
+//                    produto.getEstoque().setQuantidade(
+//                            produto.getEstoque().getQuantidade() - itemDeVenda.getQuantidade());
+//                    estoqueDAO.atualizar(produto.getEstoque());
+//                }
+//                connection.commit();
+//                carregarTableView();
+//            } catch (SQLException exc) {
+//                try {
+//                    connection.rollback();
+//                } catch (SQLException exc1) {
+//                    Logger.getLogger(FXMLAnchorPaneProcessoVendaController.class.getName()).log(Level.SEVERE, null, exc1);
+//                }
+//                Logger.getLogger(FXMLAnchorPaneProcessoVendaController.class.getName()).log(Level.SEVERE, null, exc);
+//            }   
+//        }
+            vendaDAO.setConnection(connection);
+            vendaDAO.inserir(venda);
+            carregarTableView();
         }
     }
 
@@ -241,35 +229,18 @@ public class FXMLAnchorPaneProcessoVendaController implements Initializable {
 
     @FXML
     private void handleButtonRemover(ActionEvent event) throws SQLException {
-//        Venda venda = tableView.getSelectionModel().getSelectedItem();
-//        if (venda != null) {
-//            try {
-//                connection.setAutoCommit(false);
-//                vendaDAO.setConnection(connection);
-//                itemDeVendaDAO.setConnection(connection);
-//                produtoDAO.setConnection(connection);
-//                for (ItemDeVenda itemDeVenda : venda.getItensDeVenda()) {
-//                    Produto produto = itemDeVenda.getProduto();
-//                    produto.setQuantidade(produto.getQuantidade() + itemDeVenda.getQuantidade());
-//                    produtoDAO.alterar(produto);
-//                    itemDeVendaDAO.remover(itemDeVenda);
-//                }
-//                vendaDAO.remover(venda);
-//                connection.commit();
-//                carregarTableView();
-//            } catch (SQLException exc) {
-//                try {
-//                    connection.rollback();
-//                } catch (SQLException exc1) {
-//                    Logger.getLogger(FXMLAnchorPaneProcessoVendaController.class.getName()).log(Level.SEVERE, null, exc1);
-//                }
-//                Logger.getLogger(FXMLAnchorPaneProcessoVendaController.class.getName()).log(Level.SEVERE, null, exc);
-//            }
-//        } else {
-//            Alert alert = new Alert(Alert.AlertType.ERROR);
-//            alert.setHeaderText("Por favor, escolha uma venda na tabela!");
-//            alert.show();
-//        }
+        Venda venda = tableView.getSelectionModel().getSelectedItem();
+        if (venda != null) {
+            if (AlertDialog.confirmarExclusao("Tem certeza que deseja excluir a venda " + venda.getId())) {
+                vendaDAO.setConnection(connection);
+                vendaDAO.remover(venda);
+                carregarTableView();
+            }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Por favor, escolha uma venda na tabela!");
+            alert.show();
+        }
     }
 
     public boolean showFXMLAnchorPaneProcessoVendaDialog(Venda venda) throws IOException {

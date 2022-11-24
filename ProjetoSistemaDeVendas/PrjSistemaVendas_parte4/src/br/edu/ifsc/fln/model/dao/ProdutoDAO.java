@@ -1,6 +1,7 @@
 package br.edu.ifsc.fln.model.dao;
 
 import br.edu.ifsc.fln.model.domain.Categoria;
+import br.edu.ifsc.fln.model.domain.ESituacao;
 import br.edu.ifsc.fln.model.domain.Fornecedor;
 import br.edu.ifsc.fln.model.domain.Internacional;
 import br.edu.ifsc.fln.model.domain.Nacional;
@@ -81,16 +82,13 @@ public class ProdutoDAO{
     }
 
     public List<Produto> listar() {
-        String sql =  "SELECT p.id as produto_id, p.nome as produto_nome, p.descricao as produto_descricao, p.preco as produto_preco, "
-                + "c.id as categoria_id, c.descricao as categoria_descricao, f.id as fornecedor_id "
-                + "FROM produto p INNER JOIN categoria c ON c.id = p.id_categoria "
-                + "INNER JOIN fornecedor f on f.id = p.id_fornecedor;";
+        String sql =  "SELECT * FROM produto;";
         List<Produto> retorno = new ArrayList<>();
         try {
             PreparedStatement stmt = connection.prepareStatement(sql);
             ResultSet resultado = stmt.executeQuery();
             while (resultado.next()) {
-                Produto produto = populateVO(resultado);
+                Produto produto = populateSingleVO(resultado);
                 retorno.add(produto);
             }
         } catch (SQLException ex) {
@@ -98,26 +96,28 @@ public class ProdutoDAO{
         }
         return retorno;
     }
-    
-    public List<Produto> listagem() {
-        String sql = "select * from produto p "
-                +       "inner join categoria c on c.id = p.id_categoria " 
-                +       "inner join fornecedor f on f.id = p.id_fornecedor " 
-                +       "left join nacional n on n.id_fornecedor = f.id "
-                +       "left join internacional i on i.id_fornecedor = f.id;";
-                List<Produto> retorno = new ArrayList<>();
+
+    /**
+     * Este método retorna uma lista de Produto de acordo com a situação do estoque 
+     * @param situacao - Enum ESituacao
+     * @return uma List de Produtos
+     */
+    public List<Produto> listar(ESituacao situacao) {
+        String sql =  "SELECT * FROM produto p INNER JOIN estoque e ON p.id = e.id_produto WHERE e.situacao = ?;";
+        List<Produto> retorno = new ArrayList<>();
         try {
             PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, situacao.name());
             ResultSet resultado = stmt.executeQuery();
             while (resultado.next()) {
-                Produto produto = populateVOFull(resultado);
+                Produto produto = populateSingleVO(resultado);
                 retorno.add(produto);
             }
         } catch (SQLException ex) {
             Logger.getLogger(ProdutoDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return retorno;
-    }
+    }    
     
     public List<Produto> listarPorCategoria(Categoria categoria) {
         String sql =  "SELECT p.id as produto_id, p.nome as produto_nome, p.descricao as produto_descricao, p.preco as produto_preco, "
@@ -129,7 +129,7 @@ public class ProdutoDAO{
             stmt.setInt(1, categoria.getId());
             ResultSet resultado = stmt.executeQuery();
             while (resultado.next()) {
-                Produto produto = populateVO(resultado);
+                Produto produto = populateFullVO(resultado);
                 retorno.add(produto);
             }
         } catch (SQLException ex) {
@@ -139,17 +139,14 @@ public class ProdutoDAO{
     }
 
     public Produto buscar(Produto produto) {
-        String sql =  "SELECT p.id as produto_id, p.nome as produto_nome, p.descricao as produto_descricao, p.preco as produto_preco, "
-                + "c.id as categoria_id, c.descricao as categoria_descricao, f.id as fornecedor_id "
-                + "FROM produto p INNER JOIN categoria c ON c.id = p.id_categoria "
-                + "INNER JOIN fornecedor f on f.id = p.id_fornecedor WHERE p.id = ?;";
+        String sql =  "SELECT * FROM produto p INNER JOIN estoque e ON p.id = e.id_produto WHERE p.id = ?;";
         Produto retorno = new Produto();
         try {
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setInt(1, produto.getId());
             ResultSet resultado = stmt.executeQuery();
             if (resultado.next()) {
-                retorno = populateVO(resultado);
+                retorno = populateFullVO(resultado);
             }
         } catch (SQLException ex) {
             Logger.getLogger(ProdutoDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -157,56 +154,49 @@ public class ProdutoDAO{
         return retorno;
     }
     
-    private Produto populateVO(ResultSet rs) throws SQLException {
+    private Produto populateFullVO(ResultSet rs) throws SQLException {
         Produto produto = new Produto();
         Categoria categoria = new Categoria();
+        //dados do produto
+        produto.setId(rs.getInt("id"));
+        produto.setNome(rs.getString("nome"));
+        produto.setDescricao(rs.getString("descricao"));
+        produto.setPreco(rs.getBigDecimal("preco"));
+        
+        //dados da categoria do produto
+        categoria.setId(rs.getInt("id_categoria"));
+        CategoriaDAO categoriaDAO = new CategoriaDAO();
+        categoriaDAO.setConnection(connection);
+        categoria = categoriaDAO.buscar(categoria);
         produto.setCategoria(categoria);
         
-        produto.setId(rs.getInt("produto_id"));
-        produto.setNome(rs.getString("produto_nome"));
-        produto.setDescricao(rs.getString("produto_descricao"));
-        produto.setPreco(rs.getBigDecimal("produto_preco"));
-        categoria.setId(rs.getInt("categoria_id"));
-        categoria.setDescricao(rs.getString("categoria_descricao"));
-        int idFornecedor = rs.getInt("fornecedor_id");
+        //dados do fornecedor
+        int idFornecedor = rs.getInt("id_fornecedor");
         FornecedorDAO fornecedorDAO = new FornecedorDAO();
         fornecedorDAO.setConnection(connection);
         Fornecedor fornecedor = fornecedorDAO.buscar(idFornecedor);
         produto.setFornecedor(fornecedor);
-        return produto;
-    }   
-    
-    
-    private Produto populateVOFull(ResultSet rs) throws SQLException {
-        Produto produto = new Produto();
-        Categoria categoria = new Categoria();
-        produto.setCategoria(categoria);
         
-        produto.setId(rs.getInt(1));
-        produto.setNome(rs.getString(2));
-        produto.setDescricao(rs.getString(3));
-        produto.setPreco(rs.getBigDecimal(4));
-        categoria.setId(rs.getInt(7));
-        categoria.setDescricao(rs.getString(8));
-        Fornecedor fornecedor;
-        if (rs.getString("nif") == null) {
-            fornecedor = new Nacional();
-            ((Nacional)fornecedor).setCnpj(rs.getString(14));
-        } else {
-            fornecedor = new Internacional();
-            ((Internacional)fornecedor).setNif(rs.getString(16));
-            ((Internacional)fornecedor).setPais(rs.getString(17));
-        }
-        fornecedor.setId(rs.getInt(6));
-        fornecedor.setNome(rs.getString(10));
-        fornecedor.setEmail(rs.getString(11));
-        fornecedor.setFone(rs.getString(12));
-        produto.setFornecedor(fornecedor);
-//        int idFornecedor = rs.getInt("fornecedor_id");
-//        FornecedorDAO fornecedorDAO = new FornecedorDAO();
-//        Fornecedor fornecedor = fornecedorDAO.buscar(idFornecedor);
-//        produto.setFornecedor(fornecedor);
+        //dados do estoque
+        produto.getEstoque().setProduto(produto);
+        produto.getEstoque().setSituacao(Enum.valueOf(ESituacao.class, rs.getString("situacao")));
+        produto.getEstoque().setQuantidade(rs.getInt("quantidade"));
+        produto.getEstoque().setQtdMinima(rs.getInt("qtd_minima"));
+        produto.getEstoque().setQtdMaxima(rs.getInt("qtd_maxima"));
+        
         return produto;
-    } 
-
+    }  
+    
+    private Produto populateSingleVO(ResultSet rs) throws SQLException {
+        Produto produto = new Produto();
+        //dados do produto
+        produto.setId(rs.getInt("id"));
+        produto.setNome(rs.getString("nome"));
+        produto.setDescricao(rs.getString("descricao"));
+        produto.setPreco(rs.getBigDecimal("preco"));
+        
+        
+        return produto;        
+    }
+    
 }

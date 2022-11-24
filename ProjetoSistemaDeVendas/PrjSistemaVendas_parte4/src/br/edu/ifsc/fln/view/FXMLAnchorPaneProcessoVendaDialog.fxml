@@ -93,12 +93,12 @@
                   <Button fx:id="buttonAdicionar" mnemonicParsing="false" onAction="#handleButtonAdicionar" prefHeight="25.0" prefWidth="77.0" text="Adicionar" />
                </children>
             </HBox>
-            <Label alignment="CENTER_RIGHT" prefHeight="18.0" prefWidth="82.0" text="Desconto:" GridPane.rowIndex="5">
+            <Label alignment="CENTER_RIGHT" prefHeight="18.0" prefWidth="82.0" text="Desconto (%):" GridPane.rowIndex="5">
                <GridPane.margin>
                   <Insets right="5.0" />
                </GridPane.margin>
             </Label>
-            <TextField fx:id="textFieldDesconto" alignment="CENTER_RIGHT" editable="false" promptText="\%" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <TextField fx:id="textFieldDesconto" alignment="CENTER_RIGHT" promptText="0,0" text="0,0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
             <Label alignment="CENTER_RIGHT" prefHeight="18.0" prefWidth="82.0" text="Situação:" GridPane.rowIndex="7">
                <GridPane.margin>
                   <Insets right="5.0" />

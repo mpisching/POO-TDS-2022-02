@@ -101,7 +101,7 @@ public class FXMLAnchorPaneCadastroProdutoController implements Initializable {
         tableColumnNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
         tableColumnPreco.setCellValueFactory(new PropertyValueFactory<>("preco"));
         
-        listaProdutos = produtoDAO.listagem();
+        listaProdutos = produtoDAO.listar();
         
         observableListProdutos = FXCollections.observableArrayList(listaProdutos);
         tableView.setItems(observableListProdutos);
@@ -110,6 +110,7 @@ public class FXMLAnchorPaneCadastroProdutoController implements Initializable {
     public void selecionarItemTableView(Produto produto) {
         DecimalFormat df = new DecimalFormat("0.00");
         if (produto != null) {
+            produto = produtoDAO.buscar(produto);
             lbProdutoId.setText(Integer.toString(produto.getId()));
             lbProdutoNome.setText(produto.getNome());
             lbProdutoDescricao.setText(produto.getDescricao());
@@ -140,6 +141,7 @@ public class FXMLAnchorPaneCadastroProdutoController implements Initializable {
     @FXML
     public void handleBtAlterar() throws IOException {
         Produto produto = tableView.getSelectionModel().getSelectedItem();
+        produto = produtoDAO.buscar(produto);
         if (produto != null) {
             boolean buttonConfirmarClicked = showFXMLAnchorPaneCadastrosProdutosDialog(produto);
             if (buttonConfirmarClicked) {

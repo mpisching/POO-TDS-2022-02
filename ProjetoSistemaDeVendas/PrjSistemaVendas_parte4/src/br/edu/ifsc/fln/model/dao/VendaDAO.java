@@ -36,23 +36,54 @@ public class VendaDAO {
         String sql = "INSERT INTO venda(data, total, pago, taxa_desconto, empresa, situacao, id_cliente) VALUES(?,?,?,?,?,?,?)";
         try {
             PreparedStatement stmt = connection.prepareStatement(sql);
+            connection.setAutoCommit(false);
             stmt.setDate(1, Date.valueOf(venda.getData()));
             stmt.setBigDecimal(2, venda.getTotal());
             stmt.setBoolean(3, venda.isPago());
             stmt.setDouble(4, venda.getTaxaDesconto());
             stmt.setString(5, Venda.getEmpresa());
-            stmt.setString(6, venda.getStatusVenda().name());
+            if  (venda.getStatusVenda() != null) {
+                stmt.setString(6, venda.getStatusVenda().name());
+            } else {
+                //TODO apresentar situação clara de inconsistência de dados
+                //tratamento de exceções e a necessidade de uso de commit e rollback
+                //stmt.setString(6, "teste");
+                stmt.setString(6, EStatusVenda.ABERTA.name());
+            }
             stmt.setInt(7, venda.getCliente().getId());
             stmt.execute();
+            ItemDeVendaDAO itemDeVendaDAO = new ItemDeVendaDAO();
+            itemDeVendaDAO.setConnection(connection);
+            ProdutoDAO produtoDAO = new ProdutoDAO();
+            produtoDAO.setConnection(connection);
+            EstoqueDAO estoqueDAO = new EstoqueDAO();
+            estoqueDAO.setConnection(connection);
+            for (ItemDeVenda itemDeVenda: venda.getItensDeVenda()) {
+                Produto produto = itemDeVenda.getProduto();
+                itemDeVenda.setVenda(this.buscarUltimaVenda());
+                itemDeVendaDAO.inserir(itemDeVenda);
+                produto.getEstoque().setQuantidade(
+                    produto.getEstoque().getQuantidade() - itemDeVenda.getQuantidade());
+                estoqueDAO.atualizar(produto.getEstoque());
+            }
+            connection.commit();
+            connection.setAutoCommit(true);
             return true;
         } catch (SQLException ex) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex1) {
+                Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex1);
+            }
             Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex);
             return false;
+        } finally {
+            
         }
     }
 
     public boolean alterar(Venda venda) {
-        String sql = "UPDATE venda SET data=?, total=?, pago=?, taxa_desconto=?, empresa=?, situacao=?, id_cliente=? WHERE id_venda=?";
+        String sql = "UPDATE venda SET data=?, total=?, pago=?, taxa_desconto=?, empresa=?, situacao=?, id_cliente=? WHERE id=?";
         try {
             //antes de atualizar a nova venda, a anterior terá seus itens de venda removidos
             // e o estoque dos produtos da venda sofrerão um estorno
@@ -81,7 +112,11 @@ public class VendaDAO {
             stmt.setBoolean(3, venda.isPago());
             stmt.setDouble(4, venda.getTaxaDesconto());
             stmt.setString(5, Venda.getEmpresa());
-            stmt.setString(6, venda.getStatusVenda().name());
+            if  (venda.getStatusVenda() != null) {
+                stmt.setString(6, venda.getStatusVenda().name());
+            } else {
+                stmt.setString(6, EStatusVenda.ABERTA.name());
+            }
             stmt.setInt(7, venda.getCliente().getId());
             stmt.setInt(8, venda.getId());
             stmt.execute();
@@ -106,12 +141,34 @@ public class VendaDAO {
     }
 
     public boolean remover(Venda venda) {
-        String sql = "DELETE FROM venda WHERE id_venda=?";
+        String sql = "DELETE FROM venda WHERE id=?";
         try {
             PreparedStatement stmt = connection.prepareStatement(sql);
-            //TODO - atenção ... não é só excluir a venda não, é necessário atualizar o estoque
-            stmt.setInt(1, venda.getId());
-            stmt.execute();
+            try {
+                connection.setAutoCommit(false);
+                ItemDeVendaDAO itemDeVendaDAO = new ItemDeVendaDAO();
+                itemDeVendaDAO.setConnection(connection);
+                ProdutoDAO produtoDAO = new ProdutoDAO();
+                produtoDAO.setConnection(connection);
+                EstoqueDAO estoqueDAO = new EstoqueDAO();
+                estoqueDAO.setConnection(connection);
+                for (ItemDeVenda itemDeVenda : venda.getItensDeVenda()) {
+                    Produto produto = itemDeVenda.getProduto();
+                    produto.getEstoque().setQuantidade(produto.getEstoque().getQuantidade() + itemDeVenda.getQuantidade());
+                    estoqueDAO.atualizar(produto.getEstoque());
+                    itemDeVendaDAO.remover(itemDeVenda);
+                }
+                stmt.setInt(1, venda.getId());
+                stmt.execute();
+                connection.commit();
+            } catch (SQLException exc) {
+                try {
+                    connection.rollback();
+                } catch (SQLException exc1) {
+                    Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, exc1);
+                }
+                Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, exc);
+            }            
             return true;
         } catch (SQLException ex) {
             Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex);
@@ -132,7 +189,7 @@ public class VendaDAO {
 
                 venda.setId(resultado.getInt("id"));
                 venda.setData(resultado.getDate("data").toLocalDate());
-                venda.setTotal(resultado.getBigDecimal("total"));
+                //venda.setTotal(resultado.getBigDecimal("total"));
                 venda.setPago(resultado.getBoolean("pago"));
                 venda.setTaxaDesconto(resultado.getDouble("taxa_desconto"));
                 venda.setStatusVenda(Enum.valueOf(EStatusVenda.class, resultado.getString("situacao")));
@@ -160,7 +217,7 @@ public class VendaDAO {
     }
 
     public Venda buscar(Venda venda) {
-        String sql = "SELECT * FROM venda WHERE id_venda=?";
+        String sql = "SELECT * FROM venda WHERE id=?";
         Venda vendaRetorno = new Venda();
         try {
             PreparedStatement stmt = connection.prepareStatement(sql);
@@ -170,7 +227,7 @@ public class VendaDAO {
                 Cliente cliente = new Cliente();
                 vendaRetorno.setId(resultado.getInt("id"));
                 vendaRetorno.setData(resultado.getDate("data").toLocalDate());
-                vendaRetorno.setTotal(resultado.getBigDecimal("total"));
+//                vendaRetorno.setTotal(resultado.getBigDecimal("total"));
                 vendaRetorno.setStatusVenda(Enum.valueOf(EStatusVenda.class, resultado.getString("situacao")));
                 vendaRetorno.setPago(resultado.getBoolean("pago"));
                 vendaRetorno.setTaxaDesconto(resultado.getDouble("taxa_desconto"));
@@ -199,7 +256,7 @@ public class VendaDAO {
                 Cliente cliente = new Cliente();
                 vendaRetorno.setId(resultado.getInt("id"));
                 vendaRetorno.setData(resultado.getDate("data").toLocalDate());
-                vendaRetorno.setTotal(resultado.getBigDecimal("total"));
+//                vendaRetorno.setTotal(resultado.getBigDecimal("total"));
                 vendaRetorno.setStatusVenda(Enum.valueOf(EStatusVenda.class, resultado.getString("situacao")));
                 vendaRetorno.setPago(resultado.getBoolean("pago"));
                 vendaRetorno.setTaxaDesconto(resultado.getDouble("taxa_desconto"));

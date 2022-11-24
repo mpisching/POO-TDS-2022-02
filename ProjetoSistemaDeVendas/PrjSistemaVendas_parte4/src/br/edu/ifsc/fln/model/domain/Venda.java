@@ -43,12 +43,16 @@ public class Venda {
     }
 
     public BigDecimal getTotal() {
+        calcularTotalVenda();
         return total;
     }
     
-    public void setTotal(BigDecimal total) {
-        this.total = total;
-    }
+    
+    /* o método setTotal foi retirado para evitar inconsistência, logo, para obter o total é necessário
+       executar o método calcularTotalVenda que é chamado pelo método getTotal*/
+    //public void setTotal(BigDecimal total) {
+    //    this.total =;
+    //}
 
     public boolean isPago() {
         return pago;
@@ -110,17 +114,15 @@ public class Venda {
         itensDeVenda.remove(itemVenda);
     }
     
-    public BigDecimal calcularTotalVenda() {
-        //TODO fazer o calculo com base nos itens de venda
-        return null;
-        
+    private void calcularTotalVenda() {
+        total = new BigDecimal(0.0);
+        for (ItemDeVenda item: this.getItensDeVenda()) {
+            total = total.add(item.getValor());
+        }
+        if (taxaDesconto >= 0) {
+            BigDecimal desconto = new BigDecimal(total.doubleValue() * taxaDesconto / 100.0);
+            total = total.subtract(desconto);    
+        }
     }
-    
-    public BigDecimal calcularTotalVenda(double taxaDesconto) {
-        this.taxaDesconto = taxaDesconto;
-        total = calcularTotalVenda();
-        total.subtract(new BigDecimal(total.doubleValue() * taxaDesconto / 100.0));
-        return total;
-    }
-    
+       
 }
