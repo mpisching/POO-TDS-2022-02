@@ -11,13 +11,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 
 public class VendaDAO {
@@ -62,8 +58,7 @@ public class VendaDAO {
                 Produto produto = itemDeVenda.getProduto();
                 itemDeVenda.setVenda(this.buscarUltimaVenda());
                 itemDeVendaDAO.inserir(itemDeVenda);
-                produto.getEstoque().setQuantidade(
-                    produto.getEstoque().getQuantidade() - itemDeVenda.getQuantidade());
+                produto.getEstoque().retirar(itemDeVenda.getQuantidade());
                 estoqueDAO.atualizar(produto.getEstoque());
             }
             connection.commit();
@@ -75,6 +70,9 @@ public class VendaDAO {
             } catch (SQLException ex1) {
                 Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex1);
             }
+            Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } catch (Exception ex) {
             Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         } finally {
@@ -101,7 +99,7 @@ public class VendaDAO {
             for (ItemDeVenda iv : itensDeVenda) {
                 //Produto p = iv.getProduto(); //isto não da certo ...
                 Produto p = estoqueDAO.getEstoque(iv.getProduto());
-                p.getEstoque().setQuantidade(p.getEstoque().getQuantidade() + iv.getQuantidade());
+                p.getEstoque().repor(iv.getQuantidade());
                 estoqueDAO.atualizar(p.getEstoque());
                 itemDeVendaDAO.remover(iv);
             }
@@ -123,7 +121,7 @@ public class VendaDAO {
             for (ItemDeVenda iv: venda.getItensDeVenda()) {
                 //Produto p = iv.getProduto(); //isto não da certo ...
                 Produto p = estoqueDAO.getEstoque(iv.getProduto());
-                p.getEstoque().setQuantidade(p.getEstoque().getQuantidade() - iv.getQuantidade());
+                p.getEstoque().retirar(iv.getQuantidade());
                 estoqueDAO.atualizar(p.getEstoque());
                 itemDeVendaDAO.inserir(iv);
             }
@@ -135,6 +133,9 @@ public class VendaDAO {
                 } catch (SQLException exc1) {
                     Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, exc1);
                 }
+            Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } catch (Exception ex) {
             Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
@@ -154,7 +155,7 @@ public class VendaDAO {
                 estoqueDAO.setConnection(connection);
                 for (ItemDeVenda itemDeVenda : venda.getItensDeVenda()) {
                     Produto produto = itemDeVenda.getProduto();
-                    produto.getEstoque().setQuantidade(produto.getEstoque().getQuantidade() + itemDeVenda.getQuantidade());
+                    produto.getEstoque().repor(itemDeVenda.getQuantidade());
                     estoqueDAO.atualizar(produto.getEstoque());
                     itemDeVendaDAO.remover(itemDeVenda);
                 }
@@ -171,6 +172,9 @@ public class VendaDAO {
             }            
             return true;
         } catch (SQLException ex) {
+            Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } catch (Exception ex) {
             Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
