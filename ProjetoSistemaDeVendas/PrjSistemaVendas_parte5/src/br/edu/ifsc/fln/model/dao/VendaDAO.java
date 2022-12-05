@@ -184,6 +184,7 @@ public class VendaDAO {
             Logger.getLogger(VendaDAO.class.getName()).log(Level.SEVERE, null, ex);
             AlertDialog.exceptionMessage(ex);
             return false;
+        }
     }
 
     public List<Venda> listar() {
