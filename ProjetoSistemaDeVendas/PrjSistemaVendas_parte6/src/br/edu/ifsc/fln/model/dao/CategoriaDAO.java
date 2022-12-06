@@ -63,7 +63,7 @@ public class CategoriaDAO {
     }
 
     public List<Categoria> listar() throws DAOException {
-        String sql = "SELECT * FROM categori";
+        String sql = "SELECT * FROM categoria";
         List<Categoria> retorno = new ArrayList<>();
         try {
             PreparedStatement stmt = connection.prepareStatement(sql);
