@@ -76,6 +76,10 @@ public class FXMLAnchorPaneCadastroCategoriaController implements Initializable 
         
         tableViewCategorias.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> selecionarItemTableViewCategorias(newValue));
+        
+        if (listaCategorias != null) {
+            selecionarItemTableViewCategorias(listaCategorias.get(0));
+        }
     }     
     
     public void carregarTableViewCategoria() {
