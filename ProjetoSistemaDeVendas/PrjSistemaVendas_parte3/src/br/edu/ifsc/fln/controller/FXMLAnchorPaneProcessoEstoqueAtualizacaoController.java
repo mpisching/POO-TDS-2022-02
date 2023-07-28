@@ -14,12 +14,15 @@ import java.net.URL;
 import java.sql.Connection;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 /**
@@ -79,6 +82,14 @@ public class FXMLAnchorPaneProcessoEstoqueAtualizacaoController implements Initi
     }
     
     public void carregarChoiceBoxSituacao() {
+        cbSituacao.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.UP || event.getCode() == KeyCode.DOWN) {
+                    event.consume();
+                }
+            }
+        });
         cbSituacao.setItems( FXCollections.observableArrayList( ESituacao.values()));
         //cbSituacao.getSelectionModel().select(-1);
     }    

@@ -134,8 +134,8 @@ public class ProdutoDAO{
         produto.setNome(rs.getString("produto_nome"));
         produto.setDescricao(rs.getString("produto_descricao"));
         produto.setPreco(rs.getBigDecimal("produto_preco"));
-        categoria.setId(rs.getInt("categoria_id"));
-        categoria.setDescricao(rs.getString("categoria_descricao"));
+        produto.getCategoria().setId(rs.getInt("categoria_id"));
+        produto.getCategoria().setDescricao(rs.getString("categoria_descricao"));
         return produto;
     }    
 }

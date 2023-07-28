@@ -94,21 +94,21 @@ public class FXMLAnchorPaneCadastroFornecedorDialogController implements Initial
     public void setFornecedor(Fornecedor fornecedor) {
         this.fornecedor = fornecedor;
 
-        this.tfNome.setText(this.fornecedor.getNome());
-        this.tfEmail.setText(this.fornecedor.getEmail());
-        this.tfFone.setText(this.fornecedor.getFone());
-        this.gbTipo.setDisable(true);
-        if (fornecedor instanceof Nacional) {
-            rbNacional.setSelected(true);
-            tfNumFiscal.setText(((Nacional) this.fornecedor).getCnpj());
-            tfPais.setText("BRASIL");
-            tfPais.setDisable(true);
-        } else {
-            rbInternacional.setSelected(true);
-            tfNumFiscal.setText(((Internacional) this.fornecedor).getNif());
-            tfPais.setText(((Internacional) this.fornecedor).getPais());
-            tfPais.setDisable(false);
-        }
+            this.tfNome.setText(this.fornecedor.getNome());
+            this.tfEmail.setText(this.fornecedor.getEmail());
+            this.tfFone.setText(this.fornecedor.getFone());
+            this.gbTipo.setDisable(true);
+            if (fornecedor instanceof Nacional) {
+                rbNacional.setSelected(true);
+                tfNumFiscal.setText(((Nacional) this.fornecedor).getCnpj());
+                tfPais.setText("BRASIL");
+                tfPais.setDisable(true);
+            } else {
+                rbInternacional.setSelected(true);
+                tfNumFiscal.setText(((Internacional) this.fornecedor).getNif());
+                tfPais.setText(((Internacional) this.fornecedor).getPais());
+                tfPais.setDisable(false);
+            }
         this.tfNome.requestFocus();
     }
 

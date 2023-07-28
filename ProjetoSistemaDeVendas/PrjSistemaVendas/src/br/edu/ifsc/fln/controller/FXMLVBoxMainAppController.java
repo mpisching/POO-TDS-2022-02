@@ -27,15 +27,15 @@ public class FXMLVBoxMainAppController implements Initializable {
     @FXML
     private MenuItem menuItemCadastroCliente;
     @FXML
-    private MenuItem menuItemProcessoVendas;
-    @FXML
     private MenuItem menuItemProcessoEstoque;
-    @FXML
-    private MenuItem menuItemGraficoVendaPorMes;
     @FXML
     private MenuItem menuItemRelatorioEstoque;
     @FXML
     private AnchorPane anchorPane;
+    @FXML
+    private MenuItem menuItemProcessoVenda;
+    @FXML
+    private MenuItem menuItemGraficoVendasPorMes;
     /**
      * Initializes the controller class.
      */

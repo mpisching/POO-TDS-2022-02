@@ -5,6 +5,10 @@
 package br.edu.ifsc.fln.test;
 
 import br.edu.ifsc.fln.model.domain.ESituacao;
+import br.edu.ifsc.fln.model.domain.Estoque;
+import br.edu.ifsc.fln.model.domain.Produto;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *

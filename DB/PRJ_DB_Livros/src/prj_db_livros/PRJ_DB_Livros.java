@@ -27,9 +27,9 @@ public class PRJ_DB_Livros {
     public static void main(String[] args) {
         
         estabelecerConexao();
-        Livro livro = new Livro();
-       // Livro livro = novoLivro();
-        //inserir(livro);
+       // Livro livro = new Livro();
+        Livro livro = novoLivro();
+        inserir(livro);
         //livro.setId(5);
         //livro.setTitulo("Os mistérios do além");
         //livro.setAutor("Desconhecido");

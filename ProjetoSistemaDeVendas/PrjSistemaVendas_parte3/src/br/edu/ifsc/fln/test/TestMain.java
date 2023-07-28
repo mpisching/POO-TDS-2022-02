@@ -4,11 +4,10 @@
  */
 package br.edu.ifsc.fln.test;
 
-import br.edu.ifsc.fln.model.domain.ESituacao;
 import br.edu.ifsc.fln.model.domain.Fornecedor;
 import br.edu.ifsc.fln.model.domain.Internacional;
 import br.edu.ifsc.fln.model.domain.Nacional;
-import br.edu.ifsc.fln.model.domain.Produto;
+
 
 /**
  *
