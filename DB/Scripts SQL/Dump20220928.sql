@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS db_livros_23;
-USE db_livros_23;
+CREATE DATABASE IF NOT EXISTS db_livros_23_1;
+USE db_livros_23_1;
 -- MySQL dump 10.13  Distrib 8.0.29, for Win64 (x86_64)
 --
 -- Host: localhost    Database: db_livros2
